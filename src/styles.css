@@ -15,3 +15,8 @@ select {
 button {
   font-size: 18px;
 }
+
+#error {
+  margin-top: 20px;
+  color:rgb(255, 138, 138);
+}

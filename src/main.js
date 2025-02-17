@@ -1,10 +1,13 @@
 const { invoke } = window.__TAURI__.core;
 
-let greetInputEl;
-let greetMsgEl;
-
-async function launchTerminal(name) {
-  await invoke("launch_terminal", { name});
+async function launchTerminal(terminal) {
+  const errorEl = document.getElementById("error");
+  try {
+    errorEl.innerText = "";
+    await invoke("launch", { terminal });
+  } catch (err) {
+    errorEl.innerText = err;
+  }
 }
 
 window.addEventListener("DOMContentLoaded", () => {

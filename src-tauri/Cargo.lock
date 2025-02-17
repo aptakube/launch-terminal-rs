@@ -1937,11 +1937,19 @@ dependencies = [
 name = "launch-terminal-rs"
 version = "0.1.0"
 dependencies = [
+ "launch_terminal",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
+]
+
+[[package]]
+name = "launch_terminal"
+version = "0.1.0"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
