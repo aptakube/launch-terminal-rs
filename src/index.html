@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -9,25 +9,51 @@
   </head>
 
   <body>
-    <main class="container">
+    <div id="container">
       <h1>Launch Terminal</h1>
 
-      <select id="terminal">
-        <optgroup label="macOS">
-          <option value="AppleTerminal">Apple Terminal</option>
-          <option value="ITerm2">iTerm2</option>
-        </optgroup>
-        <optgroup label="Windows">
-          <option value="WindowsDefault">Windows Default</option>
-        </optgroup>
-        <optgroup label="Linux">
-          <option value="GNOMETerminal">GNOME Terminal</option>
-        </optgroup>
-      </select>
+      <div class="mt-lg">
+        <span><strong>Terminal:</strong></span>
+        <select id="terminal">
+          <optgroup label="macOS">
+            <option value="AppleTerminal">Apple Terminal</option>
+            <option value="ITerm2">iTerm2</option>
+          </optgroup>
+          <optgroup label="Windows">
+            <option value="WindowsDefault">Windows Default</option>
+          </optgroup>
+          <optgroup label="Linux">
+            <option value="GNOMETerminal">GNOME Terminal</option>
+          </optgroup>
+        </select>
+      </div>
 
-      <button id="launch" type="button">Launch</button>
+      <div class="mt-lg">
+        <span><strong>Command:</strong></span>
+        <div class="mt-sm">
+          <input id="hello" name="command" checked type="radio" value="hello" />
+          <label for="hello">Print "Hello World"</label>
+        </div>
+        <div class="mt-sm">
+          <input id="kubectl" name="command" type="radio" value="kubectl" />
+          <label for="kubectl">kubectl get pods</label>
+        </div>
+        <div class="mt-sm">
+          <input id="custom" name="command" type="radio" value="custom" />
+          <label for="custom">Custom</label>
+          <input
+            type="text"
+            id="custom-command"
+            placeholder="Enter custom command"
+          />
+        </div>
+      </div>
 
-      <div id="error"></div>
-    </main>
+      <div class="mt-lg">
+        <button id="launch" type="button">Launch</button>
+      </div>
+
+      <div id="error" class="mt-lg"></div>
+    </div>
   </body>
 </html>

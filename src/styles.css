@@ -1,22 +1,29 @@
-:root {
+body {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  color: #f6f6f6;
-  background-color: #2f2f2f;
 }
 
-select {
-  font-size: 18px;
+.mt-sm {
+  margin-top: 6px;
 }
 
-button {
-  font-size: 18px;
+.mt-lg {
+  margin-top: 20px;
 }
 
 #error {
-  margin-top: 20px;
   color:rgb(255, 138, 138);
+}
+
+#custom-command {
+  font-size: 14px;
+  padding: 4px;
+  border-radius: 4px;
+  font-family: monospace;
+  border: 1px solid #a1a1aa;
+  width: 600px;
+}
+
+button {
+  font-size: 20px;
 }

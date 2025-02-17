@@ -1,8 +1,8 @@
 use launch_terminal::Terminal;
 
 #[tauri::command]
-fn launch(terminal: Terminal) {
-    launch_terminal::open(terminal, "kubectl get pods").expect("error while launching terminal");
+fn launch(terminal: Terminal, command: &str) {
+    launch_terminal::open(terminal, command).expect("error while launching terminal");
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
