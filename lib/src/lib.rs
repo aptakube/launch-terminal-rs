@@ -1,7 +1,10 @@
-use std::{io, process::{Child, Command}};
+use std::{fmt, io};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[cfg(target_os = "macos")]
+mod terminal_macos;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Terminal {
     AppleTerminal,
     ITerm2,
@@ -9,43 +12,35 @@ pub enum Terminal {
     GNOMETerminal
 }
 
-pub fn open(terminal: Terminal, command: &str) -> io::Result<Child> {
-    match terminal {
-        Terminal::AppleTerminal => open_apple_terminal(command),
-        Terminal::ITerm2 => open_iterm2(command),
-        _ => unimplemented!()   
+#[derive(Debug)]
+pub enum Error {
+    NotSupported,
+    IOError(io::Error),
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
 
-fn open_apple_terminal(command: &str) -> io::Result<Child> {
-    let script = format!(
-        r#"tell application "Terminal"
-        do script "{}"
-    activate
-  end"#, command);
+pub fn open(terminal: Terminal, command: &str) -> Result<(), Error> {
+    #[cfg(target_os = "macos")]
+    return terminal_macos::open(terminal, command);
 
-    return run_osascript(script);
-}
-
-fn open_iterm2(command: &str) -> io::Result<Child> {
-    let script = format!(
-        r#"tell application "iTerm"
-    set newWindow to (create window with default profile)
-    tell current session of newWindow
-        write text "{}"
-    end tell
-end tell"#,
-        command
-    );
-
-    return run_osascript(script);
-}
-
-fn run_osascript(script: String) -> io::Result<Child> {
-    let mut cmd = Command::new("osascript");
-    for line in script.lines() {
-        cmd.arg("-e").arg(line);
+    #[allow(unreachable_code)]
+    {
+        return Err(Error::NotSupported);
     }
+}
 
-    return cmd.spawn();
+
+pub fn is_installed(terminal: Terminal) -> Result<bool, Error> {
+    #[cfg(target_os = "macos")]
+    return terminal_macos::is_installed(terminal);
+
+    #[allow(unreachable_code)]
+    {
+        return Err(Error::NotSupported);
+    }
 }

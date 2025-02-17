@@ -21,6 +21,13 @@ async function launchTerminal(terminal) {
   const errorEl = document.getElementById("error");
   try {
     errorEl.innerText = "";
+    
+    const isInstalled = await invoke("is_installed", { terminal });
+    if (!isInstalled) {
+      errorEl.innerText = `The terminal ${terminal} is not installed on your system.`;
+      return;
+    }
+
     await invoke("launch", { terminal, command: getCommand() });
   } catch (err) {
     errorEl.innerText = err;
