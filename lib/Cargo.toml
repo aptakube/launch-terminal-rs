@@ -9,3 +9,6 @@ name = "launch_terminal"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
+
+[target.'cfg(windows)'.dependencies]
+shlex = "1"
