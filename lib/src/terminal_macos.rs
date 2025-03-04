@@ -12,6 +12,7 @@ pub(crate) fn open(terminal: Terminal, command: &str, env_vars: HashMap<String, 
         Terminal::AppleTerminal => open_with_app("terminal", command, env_vars),
         Terminal::ITerm2 => open_with_app("iterm", command, env_vars),
         Terminal::Warp => open_with_app("warp", command, env_vars),
+        Terminal::Ghostty => open_with_app("ghostty", command, env_vars),
         _ => return Err(Error::NotSupported),
     }
 }
@@ -21,6 +22,7 @@ pub(crate) fn is_installed(terminal: Terminal) -> Result<bool, Error> {
         Terminal::AppleTerminal => "Terminal",
         Terminal::Warp => "Warp",
         Terminal::ITerm2 => "iTerm",
+        Terminal::Ghostty => "Ghostty",
         _ => return Err(Error::NotSupported),
     };
 
