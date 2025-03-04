@@ -24,6 +24,9 @@
           </optgroup>
           <optgroup label="Linux">
             <option value="GNOMETerminal">GNOME Terminal</option>
+            <option value="Konsole">Konsole</option>
+            <option value="Kitty">Kitty</option>
+            <option value="Ghostty">Ghostty</option>
           </optgroup>
         </select>
       </div>
@@ -37,6 +40,10 @@
         <div class="mt-sm">
           <input id="kubectl" name="command" type="radio" value="kubectl" />
           <label for="kubectl">kubectl get pods</label>
+        </div>
+        <div class="mt-sm">
+          <input id="kubectl-exec" name="command" type="radio" value="kubectl-exec" />
+          <label for="kubectl-exec">kubectl exec with Welcome</label>
         </div>
         <div class="mt-sm">
           <input id="custom" name="command" type="radio" value="custom" />

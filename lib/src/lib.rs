@@ -4,12 +4,21 @@ use serde::{Deserialize, Serialize};
 #[cfg(target_os = "macos")]
 mod terminal_macos;
 
+#[cfg(target_os = "windows")]
+mod terminal_windows;
+
+#[cfg(target_os = "linux")]
+mod terminal_linux;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Terminal {
     AppleTerminal,
     ITerm2,
     WindowsDefault,
-    GNOMETerminal
+    GNOMETerminal,
+    Konsole,
+    Kitty,
+    Ghostty
 }
 
 #[derive(Debug)]
@@ -27,6 +36,12 @@ impl fmt::Display for Error {
 pub fn open(terminal: Terminal, command: &str) -> Result<(), Error> {
     #[cfg(target_os = "macos")]
     return terminal_macos::open(terminal, command);
+    
+    #[cfg(target_os = "windows")]
+    return terminal_windows::open(terminal, command);
+    
+    #[cfg(target_os = "linux")]
+    return terminal_linux::open(terminal, command);
 
     #[allow(unreachable_code)]
     {
@@ -38,6 +53,12 @@ pub fn open(terminal: Terminal, command: &str) -> Result<(), Error> {
 pub fn is_installed(terminal: Terminal) -> Result<bool, Error> {
     #[cfg(target_os = "macos")]
     return terminal_macos::is_installed(terminal);
+    
+    #[cfg(target_os = "windows")]
+    return terminal_windows::is_installed(terminal);
+    
+    #[cfg(target_os = "linux")]
+    return terminal_linux::is_installed(terminal);
 
     #[allow(unreachable_code)]
     {
