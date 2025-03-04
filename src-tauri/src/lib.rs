@@ -1,8 +1,9 @@
 use launch_terminal::Terminal;
+use std::collections::HashMap;
 
 #[tauri::command]
-async fn launch(terminal: Terminal, command: &str) -> Result<(), String> {
-    match launch_terminal::open(terminal.clone(), command) {
+async fn launch(terminal: Terminal, command: &str, env_vars: HashMap<String, String>) -> Result<(), String> {
+    match launch_terminal::open(terminal.clone(), command, env_vars) {
         Ok(_) => Ok(()),
         Err(err) => match err {
             launch_terminal::Error::NotSupported => Err(format!("Terminal {:?} is not supported on this OS", terminal)),

@@ -1,11 +1,12 @@
 use std::process::{Command, Stdio};
+use std::collections::HashMap;
 
 use crate::{Error, Terminal};
 
-pub(crate) fn open(terminal: Terminal, command: &str) -> Result<(), Error> {
+pub(crate) fn open(terminal: Terminal, command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
     return match terminal {
-        Terminal::AppleTerminal => open_apple_terminal(command),
-        Terminal::ITerm2 => open_iterm2(command),
+        Terminal::AppleTerminal => open_apple_terminal(command, env_vars),
+        Terminal::ITerm2 => open_iterm2(command, env_vars),
         _ => return Err(Error::NotSupported),
     }
 }
@@ -34,25 +35,24 @@ pub(crate) fn is_installed(terminal: Terminal) -> Result<bool, Error> {
 }
 
 
-fn open_apple_terminal(command: &str) -> Result<(), Error> {
+fn open_apple_terminal(command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
     let script = format!(
         r#"tell application "Terminal"
-        do script "{}"
+        do script "{} {}"
     activate
-  end"#, command);
+  end"#, stringify_env_vars(env_vars), command);
 
     return run_osascript(script);
 }
 
-fn open_iterm2(command: &str) -> Result<(), Error> {
+fn open_iterm2(command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
     let script = format!(
         r#"tell application "iTerm"
     set newWindow to (create window with default profile)
     tell current session of newWindow
-        write text "{}"
+        write text "{} {}"
     end tell
-end tell"#,
-        command
+end tell"#, stringify_env_vars(env_vars),command
     );
 
     return run_osascript(script);
@@ -68,4 +68,12 @@ fn run_osascript(script: String) -> Result<(), Error> {
         Ok(_) => return Ok(()),
         Err(err) => return Err(Error::IOError(err)),
     }
+}
+
+fn stringify_env_vars(env_vars: HashMap<String, String>) -> String {
+    env_vars
+        .iter()
+        .map(|(key, value)| format!("{}='{}'", key, value))
+        .collect::<Vec<String>>()
+        .join(" ")
 }
