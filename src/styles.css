@@ -15,7 +15,7 @@ body {
   color:rgb(255, 138, 138);
 }
 
-#custom-command {
+input[type="text"] {
   font-size: 14px;
   padding: 4px;
   border-radius: 4px;

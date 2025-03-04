@@ -12,8 +12,13 @@ function getCommand() {
       if (value == "kubectl") {
         return "kubectl get pods";
       }
+      if (value == "printenv") {
+        return "printenv";
+      }
       if (value == "kubectl-exec") {
-        return `kubectl exec nginx-deployment-76455cb95c-62ndq --stdin --tty -- sh -c "clear; /bin/echo -e '\\033[1;4;32mCONTEXT\\033[0m 👉 Connected to container \\033[1;4;36mCONTAINER\\033[0m on pod \\033[1;4;36mNAMESPACE\\033[0m / \\033[1;4;36mPOD\\033[0m\\n'; (bash || ash || sh)"`;
+        const ns = document.getElementById("namespace").value;
+        const pod = document.getElementById("default").value;
+        return `kubectl exec -n ${ns} ${pod} --stdin --tty -- sh -c "clear; /bin/echo -e '\\033[1;4;32mCONTEXT\\033[0m 👉 Connected to container \\033[1;4;36mCONTAINER\\033[0m on pod \\033[1;4;36mNAMESPACE\\033[0m / \\033[1;4;36mPOD\\033[0m\\n'; (bash || ash || sh)"`;
       }
       return "echo 'Hello World'";
     }

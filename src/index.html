@@ -38,12 +38,30 @@
           <label for="hello">Print "Hello World"</label>
         </div>
         <div class="mt-sm">
+          <input id="printenv" name="command" checked type="radio" value="printenv" />
+          <label for="printenv">Print Environment Variables</label>
+        </div>
+        <div class="mt-sm">
           <input id="kubectl" name="command" type="radio" value="kubectl" />
           <label for="kubectl">kubectl get pods</label>
         </div>
         <div class="mt-sm">
           <input id="kubectl-exec" name="command" type="radio" value="kubectl-exec" />
-          <label for="kubectl-exec">kubectl exec with Welcome</label>
+          <label for="kubectl-exec">kubectl exec -n </label>
+          <input
+            type="text"
+            id="namespace"
+            value="default"
+            placeholder="namespace"
+            style="width: 150px"
+          />
+          <input
+            type="text"
+            id="pod-name"
+            value="nginx"
+            placeholder="pod name"
+            style="width: 300px"
+          />
         </div>
         <div class="mt-sm">
           <input id="custom" name="command" type="radio" value="custom" />
