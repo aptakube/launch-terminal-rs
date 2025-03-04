@@ -15,6 +15,7 @@ mod terminal_linux;
 pub enum Terminal {
     AppleTerminal,
     ITerm2,
+    Warp,
     WindowsDefault,
     GNOMETerminal,
     Konsole,

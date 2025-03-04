@@ -106,20 +106,12 @@ fn binary_exists(name: &str) -> bool {
     }
 }
 
-
-pub fn write_temp_script(command: &str) -> Result<PathBuf, Error> {
+fn write_temp_script(command: &str) -> Result<PathBuf, Error> {
     let dir = temp_dir();
     let path = dir.join("run-in-terminal.sh");
 
-    let mut f = match File::create(&path) {
-        Ok(f) => f,
-        Err(err) => return Err(Error::IOError(err)),
-    };
+    let mut f = File::create(&path).map_err(Error::IOError)?;
 
     let content = format!("#!/usr/bin/env sh\n\n{}\nexec $SHELL", command);
-
-    match f.write_all(content.as_bytes()).and_then(|_| f.flush()) {
-        Ok(_) => Ok(path),
-        Err(err) => return Err(Error::IOError(err)),
-    }
+    f.write_all(content.as_bytes()).and_then(|_| f.flush()).map_err(Error::IOError)?
 }

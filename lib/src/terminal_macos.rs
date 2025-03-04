@@ -1,12 +1,17 @@
 use std::process::{Command, Stdio};
 use std::collections::HashMap;
 
+use std::fs::{self, File};
+use std::os::unix::fs::PermissionsExt;
+use std::{env::temp_dir, io::Write, path::PathBuf};
+
 use crate::{Error, Terminal};
 
 pub(crate) fn open(terminal: Terminal, command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
     return match terminal {
-        Terminal::AppleTerminal => open_apple_terminal(command, env_vars),
-        Terminal::ITerm2 => open_iterm2(command, env_vars),
+        Terminal::AppleTerminal => open_with_app("terminal", command, env_vars),
+        Terminal::ITerm2 => open_with_app("iterm", command, env_vars),
+        Terminal::Warp => open_with_app("warp", command, env_vars),
         _ => return Err(Error::NotSupported),
     }
 }
@@ -14,6 +19,7 @@ pub(crate) fn open(terminal: Terminal, command: &str, env_vars: HashMap<String, 
 pub(crate) fn is_installed(terminal: Terminal) -> Result<bool, Error> {
     let app_name = match terminal {
         Terminal::AppleTerminal => "Terminal",
+        Terminal::Warp => "Warp",
         Terminal::ITerm2 => "iTerm",
         _ => return Err(Error::NotSupported),
     };
@@ -34,40 +40,28 @@ pub(crate) fn is_installed(terminal: Terminal) -> Result<bool, Error> {
    return Ok(found)
 }
 
+fn open_with_app(app: &str, command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
+    let path = write_temp_script(command, env_vars)?;
 
-fn open_apple_terminal(command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
-    let script = format!(
-        r#"tell application "Terminal"
-        do script "{} {}"
-    activate
-  end"#, stringify_env_vars(env_vars), command);
-
-    return run_osascript(script);
+    match Command::new("open").arg("-a").arg(app).arg(path).spawn() {
+        Ok(_) => Ok(()),
+        Err(err) => Err(Error::IOError(err)),
+    }
 }
 
-fn open_iterm2(command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
-    let script = format!(
-        r#"tell application "iTerm"
-    set newWindow to (create window with default profile)
-    tell current session of newWindow
-        write text "{} {}"
-    end tell
-end tell"#, stringify_env_vars(env_vars),command
-    );
+fn write_temp_script(command: &str, env_vars: HashMap<String, String>) -> Result<PathBuf, Error> {
+    let dir = temp_dir();
+    let path = dir.join("run-in-terminal.sh");
 
-    return run_osascript(script);
-}
+    let mut f = File::create(&path).map_err(Error::IOError)?;
 
-fn run_osascript(script: String) -> Result<(), Error> {
-    let mut cmd = Command::new("osascript");
-    for line in script.lines() {
-        cmd.arg("-e").arg(line);
-    }
+    let content = format!("#!/usr/bin/env sh\n\n{} {}\nexec $SHELL", stringify_env_vars(env_vars), command);
+    f.write_all(content.as_bytes()).and_then(|_| f.flush()).map_err(Error::IOError)?;
 
-    match cmd.spawn() {
-        Ok(_) => return Ok(()),
-        Err(err) => return Err(Error::IOError(err)),
-    }
+    let permissions = fs::Permissions::from_mode(0o755);
+    fs::set_permissions(&path, permissions).map_err(Error::IOError)?;
+
+    Ok(path)
 }
 
 fn stringify_env_vars(env_vars: HashMap<String, String>) -> String {
