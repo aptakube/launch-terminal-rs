@@ -44,8 +44,8 @@ pub fn open(
     return terminal_macos::open(terminal, command, env_vars);
 
     #[cfg(target_os = "windows")]
-    return terminal_windows::open(terminal, command);
-
+    return terminal_windows::open(terminal, command, env_vars);
+    
     #[cfg(target_os = "linux")]
     return terminal_linux::open(terminal, command, env_vars);
 

@@ -16,7 +16,7 @@ function getCommand() {
         return "kubectl get pods";
       }
       if (value == "printenv") {
-        return "printenv";
+        return navigator.platform === 'Win32' ? "set" : "printenv";
       }
       if (value == "kubectl-exec") {
         const ns = document.getElementById("namespace").value;
@@ -52,6 +52,7 @@ async function launchTerminal(terminal) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+  console.log(window.__TAURI__)
   const bt = document.getElementById("launch");
   const terminal = document.getElementById("terminal");
   bt.addEventListener("click", (e) => {
