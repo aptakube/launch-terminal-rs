@@ -9,6 +9,9 @@ function getCommand() {
       if (value == "custom") {
         return document.getElementById("custom-command").value;
       }
+      if (value == "shell") {
+        return "";
+      }
       if (value == "kubectl") {
         return "kubectl get pods";
       }
@@ -25,20 +28,6 @@ function getCommand() {
   }
 }
 
-function getEnvVars() {
-  var elements = document.getElementsByName("command");
-
-  for (var i=0, len=elements.length; i<len; ++i) {
-    if (elements[i].checked) {
-      const value = elements[i].value;
-      if (value == "printenv") {
-        return { LAUNCH_TERMINAL_KEY: "example value" };
-      }
-      return {}
-    }
-  }
-}
-
 async function launchTerminal(terminal) {
   const errorEl = document.getElementById("error");
   try {
@@ -50,7 +39,13 @@ async function launchTerminal(terminal) {
       return;
     }
 
-    await invoke("launch", { terminal, command: getCommand(), envVars: getEnvVars() });
+    await invoke("launch", { 
+      terminal,
+      command: getCommand(),
+      envVars: {
+        LAUNCH_TERMINAL_KEY: "example value"
+      }
+    });
   } catch (err) {
     errorEl.innerText = err;
   }
