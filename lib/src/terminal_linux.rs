@@ -1,5 +1,6 @@
 use crate::{Error, Terminal};
 use std::collections::HashMap;
+use std::env::home_dir;
 use std::{
     env::temp_dir,
     fs,
@@ -48,12 +49,19 @@ fn command_name(terminal: Terminal) -> Result<(&'static str, Launcher), Error> {
 fn new_command(term: Terminal, env: HashMap<String, String>) -> Result<(Command, Launcher), Error> {
     let (bin, launcher) = command_name(term)?;
     let mut cmd = Command::new(bin);
-    cmd.envs(env).current_dir(temp_dir());
+    cmd.envs(env).current_dir(cwd());
+
+    if std::env::var("APPIMAGE").is_ok() {
+        // AppImage sets its own PYTHONHOME and PYTHONPATH variables and we don't want that to leak into the new terminal
+        // If we don't remove them, some terminals like gnome-terminal and kitty won't launch on AppImage
+        cmd.env_remove("PYTHONHOME").env_remove("PYTHONPATH");
+    }
+
     Ok((cmd, launcher))
 }
 
 fn open_warp(command: &mut Command, path: &str) -> Result<(), Error> {
-    write_warp_launch_config(temp_dir().to_string_lossy().as_ref(), path)?;
+    write_warp_launch_config(cwd().to_string_lossy().as_ref(), path)?;
     match command.args(["warp://launch/aptakube.yaml"]).spawn() {
         Ok(_) => Ok(()),
         Err(err) => Err(Error::IOError(err)),
@@ -144,10 +152,19 @@ fn write_temp_script(command: &str) -> Result<PathBuf, Error> {
     let path = dir.join("run-in-terminal.sh");
 
     let mut f = File::create(&path).map_err(Error::IOError)?;
-    let content = format!("#!/usr/bin/env sh\n\n{}\nexec $SHELL", command);
+
+    let content = if command.is_empty() {
+        format!("#!/usr/bin/env sh\n\nexec $SHELL")
+    } else {
+        format!("#!/usr/bin/env sh\n\n{}\nexec $SHELL", command)
+    };
     f.write_all(content.as_bytes())
         .and_then(|_| f.flush())
         .map_err(Error::IOError)?;
     fs::set_permissions(&path, fs::Permissions::from_mode(0o755)).map_err(Error::IOError)?;
     Ok(path)
+}
+
+fn cwd() -> PathBuf {
+    home_dir().unwrap_or(temp_dir())
 }
