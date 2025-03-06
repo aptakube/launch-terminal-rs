@@ -1,4 +1,5 @@
 use crate::{Error, Terminal};
+use std::collections::HashMap;
 use std::{
     env::temp_dir,
     fs,
@@ -9,85 +10,79 @@ use std::{
     process::{Command, Stdio},
 };
 
-pub(crate) fn open(terminal: Terminal, command: &str) -> Result<(), Error> {
-    match terminal {
-        Terminal::GNOMETerminal => open_gnome_terminal(command),
-        Terminal::Konsole => open_konsole(command),
-        Terminal::Kitty => open_kitty(command),
-        Terminal::Ghostty => open_ghostty(command),
-        Terminal::Warp => open_warp(command),
-        _ => Err(Error::NotSupported),
+type Launcher = fn(&mut Command, &str) -> Result<(), Error>;
+
+pub(crate) fn open(
+    terminal: Terminal,
+    command: &str,
+    env_vars: HashMap<String, String>,
+) -> Result<(), Error> {
+    let (mut cmd, launcher) = new_command(terminal, env_vars)?;
+    if let Some(path) = write_temp_script(command)?.to_str() {
+        launcher(&mut cmd, path)
+    } else {
+        Err(Error::IOError(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "Invalid path",
+        )))
     }
 }
 
 pub(crate) fn is_installed(terminal: Terminal) -> Result<bool, Error> {
-    let bin = match terminal {
-        Terminal::GNOMETerminal => "gnome-terminal",
-        Terminal::Konsole => "konsole",
-        Terminal::Kitty => "kitty",
-        Terminal::Ghostty => "ghostty",
-        Terminal::Warp => "warp-terminal",
-        _ => return Err(Error::NotSupported),
-    };
+    let (bin, _) = command_name(terminal)?;
     Ok(binary_exists(bin))
 }
 
-fn open_warp(command: &str) -> Result<(), Error> {
-    let path = write_temp_script(command)?.to_string_lossy().to_string();
-    write_warp_launch_config(temp_dir().to_string_lossy().as_ref(), path.as_str())?;
-    match Command::new("warp-terminal")
-        .current_dir(temp_dir())
-        .args(["warp://launch/aptakube.yaml"])
-        .spawn()
-    {
+fn command_name(terminal: Terminal) -> Result<(&'static str, Launcher), Error> {
+    let map = match terminal {
+        Terminal::GNOMETerminal => ("gnome-terminal", open_gnome_terminal as Launcher),
+        Terminal::Konsole => ("konsole", open_konsole as Launcher),
+        Terminal::Kitty => ("kitty", open_kitty as Launcher),
+        Terminal::Ghostty => ("ghostty", open_ghostty as Launcher),
+        Terminal::Warp => ("warp-terminal", open_warp as Launcher),
+        _ => Err(Error::NotSupported)?,
+    };
+    Ok(map)
+}
+
+fn new_command(term: Terminal, env: HashMap<String, String>) -> Result<(Command, Launcher), Error> {
+    let (bin, launcher) = command_name(term)?;
+    let mut cmd = Command::new(bin);
+    cmd.envs(env).current_dir(temp_dir());
+    Ok((cmd, launcher))
+}
+
+fn open_warp(command: &mut Command, path: &str) -> Result<(), Error> {
+    write_warp_launch_config(temp_dir().to_string_lossy().as_ref(), path)?;
+    match command.args(["warp://launch/aptakube.yaml"]).spawn() {
         Ok(_) => Ok(()),
         Err(err) => Err(Error::IOError(err)),
     }
 }
 
-fn open_ghostty(command: &str) -> Result<(), Error> {
-    let path = write_temp_script(command)?.to_string_lossy().to_string();
-    match Command::new("ghostty")
-        .current_dir(temp_dir())
-        .args(["-e", path.as_str()])
-        .spawn()
-    {
+fn open_ghostty(commnad: &mut Command, path: &str) -> Result<(), Error> {
+    match commnad.args(["-e", path]).spawn() {
         Ok(_) => Ok(()),
         Err(err) => Err(Error::IOError(err)),
     }
 }
 
-fn open_kitty(command: &str) -> Result<(), Error> {
-    let path = write_temp_script(command)?.to_string_lossy().to_string();
-    match Command::new("kitty")
-        .current_dir(temp_dir())
-        .args([path.as_str()])
-        .spawn()
-    {
+fn open_kitty(command: &mut Command, path: &str) -> Result<(), Error> {
+    match command.args([path]).spawn() {
         Ok(_) => Ok(()),
         Err(err) => Err(Error::IOError(err)),
     }
 }
 
-fn open_konsole(command: &str) -> Result<(), Error> {
-    let path = write_temp_script(command)?.to_string_lossy().to_string();
-    match Command::new("konsole")
-        .current_dir(temp_dir())
-        .args(["-e", path.as_str()])
-        .spawn()
-    {
+fn open_konsole(command: &mut Command, path: &str) -> Result<(), Error> {
+    match command.args(["-e", path]).spawn() {
         Ok(_) => Ok(()),
         Err(err) => Err(Error::IOError(err)),
     }
 }
 
-fn open_gnome_terminal(command: &str) -> Result<(), Error> {
-    let path = write_temp_script(command)?.to_string_lossy().to_string();
-    match Command::new("gnome-terminal")
-        .current_dir(temp_dir())
-        .args(["--", path.as_str()])
-        .spawn()
-    {
+fn open_gnome_terminal(command: &mut Command, path: &str) -> Result<(), Error> {
+    match command.args(["--", path]).spawn() {
         Ok(_) => Ok(()),
         Err(err) => Err(Error::IOError(err)),
     }

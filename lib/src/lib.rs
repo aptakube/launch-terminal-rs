@@ -1,6 +1,6 @@
-use std::{fmt, io};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::{fmt, io};
 
 #[cfg(target_os = "macos")]
 mod terminal_macos;
@@ -35,15 +35,19 @@ impl fmt::Display for Error {
     }
 }
 
-pub fn open(terminal: Terminal, command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
+pub fn open(
+    terminal: Terminal,
+    command: &str,
+    env_vars: HashMap<String, String>,
+) -> Result<(), Error> {
     #[cfg(target_os = "macos")]
     return terminal_macos::open(terminal, command, env_vars);
-    
+
     #[cfg(target_os = "windows")]
     return terminal_windows::open(terminal, command);
-    
+
     #[cfg(target_os = "linux")]
-    return terminal_linux::open(terminal, command);
+    return terminal_linux::open(terminal, command, env_vars);
 
     #[allow(unreachable_code)]
     {
@@ -51,14 +55,13 @@ pub fn open(terminal: Terminal, command: &str, env_vars: HashMap<String, String>
     }
 }
 
-
 pub fn is_installed(terminal: Terminal) -> Result<bool, Error> {
     #[cfg(target_os = "macos")]
     return terminal_macos::is_installed(terminal);
-    
+
     #[cfg(target_os = "windows")]
     return terminal_windows::is_installed(terminal);
-    
+
     #[cfg(target_os = "linux")]
     return terminal_linux::is_installed(terminal);
 
