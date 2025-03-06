@@ -17,6 +17,7 @@ pub enum Terminal {
     ITerm2,
     Warp,
     WindowsDefault,
+    WSL,
     GNOMETerminal,
     Konsole,
     Kitty,
