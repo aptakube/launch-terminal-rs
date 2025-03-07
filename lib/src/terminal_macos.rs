@@ -44,7 +44,10 @@ pub(crate) fn is_installed(terminal: Terminal) -> Result<bool, Error> {
 
 fn open_with_app(app: &str, command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
     let path = write_temp_script(command, env_vars)?;
-    Command::new("open").args(["-a", app, path]).spawn()?;
+    Command::new("open")
+        .envs(env_vars)
+        .args(["-a", app, path])
+        .spawn()?;
     Ok(())
 }
 
