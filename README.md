@@ -17,6 +17,7 @@ This is currently used by [Aptakube](https://aptakube.com).
 - Warp
 - Ghostty
 - Kitty
+- WezTerm
 
 ## Windows
 

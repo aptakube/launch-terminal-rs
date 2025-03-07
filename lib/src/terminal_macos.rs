@@ -14,6 +14,7 @@ pub(crate) fn open(terminal: Terminal, command: &str, env_vars: HashMap<String, 
         Terminal::Warp => open_with_app("warp", command, env_vars),
         Terminal::Ghostty => open_with_app("ghostty", command, env_vars),
         Terminal::Kitty => open_with_app("kitty", command, env_vars),
+        Terminal::WezTerm => open_with_wezterm(command, env_vars),
         _ => return Err(Error::NotSupported),
     }
 }
@@ -23,6 +24,7 @@ pub(crate) fn is_installed(terminal: Terminal) -> Result<bool, Error> {
         Terminal::AppleTerminal => "Terminal",
         Terminal::Warp => "Warp",
         Terminal::ITerm2 => "iTerm",
+        Terminal::WezTerm => "WezTerm",
         Terminal::Ghostty => "Ghostty",
         Terminal::Kitty => "Kitty",
         _ => return Err(Error::NotSupported),
@@ -48,6 +50,15 @@ fn open_with_app(app: &str, command: &str, env_vars: HashMap<String, String>) ->
     let path = write_temp_script(command, env_vars)?;
 
     match Command::new("open").arg("-a").arg(app).arg(path).spawn() {
+        Ok(_) => Ok(()),
+        Err(err) => Err(Error::IOError(err)),
+    }
+}
+
+fn open_with_wezterm(command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
+    let path = write_temp_script(command, env_vars)?;
+
+    match Command::new("open").arg("-a").arg("wezterm").arg("--args").arg("start").arg("--").arg(path).spawn() {
         Ok(_) => Ok(()),
         Err(err) => Err(Error::IOError(err)),
     }

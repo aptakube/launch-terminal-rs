@@ -18,6 +18,7 @@ pub enum Terminal {
     Warp,
     WindowsDefault,
     WSL,
+    WezTerm,
     GNOMETerminal,
     Konsole,
     Kitty,
