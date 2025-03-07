@@ -22,13 +22,19 @@ pub enum Terminal {
     GNOMETerminal,
     Konsole,
     Kitty,
-    Ghostty
+    Ghostty,
 }
 
 #[derive(Debug)]
 pub enum Error {
     NotSupported,
     IOError(io::Error),
+}
+
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Self {
+        Error::IOError(err)
+    }
 }
 
 impl fmt::Display for Error {
@@ -47,7 +53,7 @@ pub fn open(
 
     #[cfg(target_os = "windows")]
     return terminal_windows::open(terminal, command, env_vars);
-    
+
     #[cfg(target_os = "linux")]
     return terminal_linux::open(terminal, command, env_vars);
 
