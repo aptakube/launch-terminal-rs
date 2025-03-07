@@ -14,6 +14,9 @@ This is currently used by [Aptakube](https://aptakube.com).
 
 - Apple Terminal
 - iTerm2
+- Warp
+- Ghostty
+- Kitty
 
 ## Windows
 
