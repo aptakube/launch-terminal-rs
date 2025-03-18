@@ -58,7 +58,7 @@ fn open_with_app(app: &str, command: &str, env_vars: HashMap<String, String>) ->
 fn open_with_wezterm(command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
     let path = write_temp_script(command, env_vars)?;
 
-    match Command::new("open").arg("-a").arg("wezterm").arg("--args").arg("start").arg("--").arg(path).spawn() {
+    match Command::new("open").arg("-na").arg("wezterm").arg("--args").arg("start").arg("--").arg(path).spawn() {
         Ok(_) => Ok(()),
         Err(err) => Err(Error::IOError(err)),
     }
