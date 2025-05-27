@@ -84,9 +84,9 @@ fn write_temp_script(command: &str, env_vars: HashMap<String, String>) -> Result
     let mut f = File::create(&path).map_err(Error::IOError)?;
 
     let content = if command.is_empty() {
-        format!("#!/usr/bin/env zsh\n\n{} exec $SHELL", stringify_env_vars(env_vars))
+        format!("#!/usr/bin/env zsh -il\n\n{} exec $SHELL", stringify_env_vars(env_vars))
     } else {
-        format!("#!/usr/bin/env zsh\n\n{} {}\nexec $SHELL", stringify_env_vars(env_vars), command)
+        format!("#!/usr/bin/env zsh -il\n\n{} {}\nexec $SHELL", stringify_env_vars(env_vars), command)
     };
 
     f.write_all(content.as_bytes()).and_then(|_| f.flush()).map_err(Error::IOError)?;
