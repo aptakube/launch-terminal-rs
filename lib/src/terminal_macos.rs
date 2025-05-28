@@ -14,6 +14,7 @@ pub(crate) fn open(terminal: Terminal, command: &str, env_vars: HashMap<String, 
         Terminal::Warp => open_with_app("warp", command, env_vars),
         Terminal::Ghostty => open_with_app("ghostty", command, env_vars),
         Terminal::Kitty => open_with_app("kitty", command, env_vars),
+        Terminal::Tabby => open_with_tabby(command, env_vars),
         Terminal::WezTerm => open_with_wezterm(command, env_vars),
         _ => return Err(Error::NotSupported),
     }
@@ -27,6 +28,7 @@ pub(crate) fn is_installed(terminal: Terminal) -> Result<bool, Error> {
         Terminal::WezTerm => "WezTerm",
         Terminal::Ghostty => "Ghostty",
         Terminal::Kitty => "Kitty",
+        Terminal::Tabby => "Tabby",
         _ => return Err(Error::NotSupported),
     };
 
@@ -64,6 +66,15 @@ fn open_with_wezterm(command: &str, env_vars: HashMap<String, String>) -> Result
     }
 }
 
+fn open_with_tabby(command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
+    let path = write_temp_script(command, env_vars)?;
+
+    match Command::new("open").arg("-na").arg("Tabby").arg("--args").arg("run").arg(path).spawn() {
+        Ok(_) => Ok(()),
+        Err(err) => Err(Error::IOError(err)),
+    }
+}
+
 fn write_temp_script(command: &str, env_vars: HashMap<String, String>) -> Result<PathBuf, Error> {
     let dir = temp_dir();
     let path = dir.join("run-in-terminal.sh");
@@ -71,9 +82,9 @@ fn write_temp_script(command: &str, env_vars: HashMap<String, String>) -> Result
     let mut f = File::create(&path).map_err(Error::IOError)?;
 
     let content = if command.is_empty() {
-        format!("#!/usr/bin/env zsh\n\ncd $HOME\n{} exec $SHELL", stringify_env_vars(env_vars))
+        format!("#!/usr/bin/env zsh -il\n\ncd $HOME\n{} exec $SHELL", stringify_env_vars(env_vars))
     } else {
-        format!("#!/usr/bin/env zsh\n\ncd $HOME\n{} {}\nexec $SHELL", stringify_env_vars(env_vars), command)
+        format!("#!/usr/bin/env zsh -il\n\ncd $HOME\n{} {}\nexec $SHELL", stringify_env_vars(env_vars), command)
     };
 
     f.write_all(content.as_bytes()).and_then(|_| f.flush()).map_err(Error::IOError)?;
