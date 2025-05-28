@@ -22,7 +22,8 @@ pub enum Terminal {
     GNOMETerminal,
     Konsole,
     Kitty,
-    Ghostty
+    Ghostty,
+    Tabby
 }
 
 #[derive(Debug)]
