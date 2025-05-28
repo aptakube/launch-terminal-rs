@@ -154,9 +154,9 @@ fn write_temp_script(command: &str) -> Result<PathBuf, Error> {
     let mut f = File::create(&path).map_err(Error::IOError)?;
 
     let content = if command.is_empty() {
-        format!("#!/usr/bin/env sh\n\nexec $SHELL")
+        format!("#!/usr/bin/env sh\n\n cd $HOME\nexec $SHELL")
     } else {
-        format!("#!/usr/bin/env sh\n\n{}\nexec $SHELL", command)
+        format!("#!/usr/bin/env sh\n\n{}\n cd $HOME\nexec $SHELL", command)
     };
     f.write_all(content.as_bytes())
         .and_then(|_| f.flush())
