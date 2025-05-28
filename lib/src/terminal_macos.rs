@@ -66,9 +66,7 @@ fn open_with_wezterm(command: &str, env_vars: HashMap<String, String>) -> Result
     }
 }
 
-fn open_with_tabby(command: &str, mut env_vars: HashMap<String, String>) -> Result<(), Error> {
-    env_vars.entry("PATH".into()).or_insert_with(|| std::env::var("PATH").unwrap_or_default());
-    
+fn open_with_tabby(command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
     let path = write_temp_script(command, env_vars)?;
 
     match Command::new("open").arg("-na").arg("Tabby").arg("--args").arg("run").arg(path).spawn() {
