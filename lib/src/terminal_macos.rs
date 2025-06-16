@@ -1,11 +1,16 @@
+use std::env::{self, home_dir};
+use std::path::Path;
 use std::process::{Command, Stdio};
 use std::collections::HashMap;
+use once_cell::sync::Lazy;
 
 use std::fs::{self, File};
 use std::os::unix::fs::PermissionsExt;
 use std::{env::temp_dir, io::Write, path::PathBuf};
 
 use crate::{Error, Terminal};
+
+const DEFAULT_SHELL: &str = "zsh";
 
 pub(crate) fn open(terminal: Terminal, command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
     return match terminal {
@@ -75,6 +80,51 @@ fn open_with_tabby(command: &str, env_vars: HashMap<String, String>) -> Result<(
     }
 }
 
+static SHELL: Lazy<String> = Lazy::new(|| {
+    let home = home_dir().unwrap_or(PathBuf::from(format!("/Users/{}", env::var("USER").unwrap_or("user".to_string()))));
+    let user_path = format!("{}/", home.to_string_lossy());
+
+    let output = Command::new("dscl")
+        .arg(".")
+        .arg("-read")
+        .arg(&user_path)
+        .arg("UserShell")
+        .output();
+
+    match output {
+        Ok(output) => {
+            if output.status.success() {
+                let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+                if let Some(shell) = stdout.split(':').nth(1) {
+                    to_hashbang(shell.trim().to_owned())
+                } else {
+                    env_shell()
+                }
+            } else {
+                env_shell()
+            }
+        }
+        Err(_) => env_shell(),
+    }
+});
+
+fn env_shell() -> String {
+    match env::var("SHELL") {
+        Ok(shell) => to_hashbang(shell),
+        Err(_) => to_hashbang(DEFAULT_SHELL.to_string()),
+    }
+}
+
+fn to_hashbang(shell: String) -> String {
+    if shell.ends_with("zsh") {
+        DEFAULT_SHELL.to_string()
+    } else if Path::new(&shell).is_absolute() {
+        format!("#!{}", shell)
+    } else {
+        format!("#!/usr/bin/env {}", shell)
+    }
+}
+
 fn write_temp_script(command: &str, env_vars: HashMap<String, String>) -> Result<PathBuf, Error> {
     let dir = temp_dir();
     let path = dir.join("run-in-terminal.sh");
@@ -82,9 +132,9 @@ fn write_temp_script(command: &str, env_vars: HashMap<String, String>) -> Result
     let mut f = File::create(&path).map_err(Error::IOError)?;
 
     let content = if command.is_empty() {
-        format!("#!/usr/bin/env zsh -il\n\ncd $HOME\n{} exec $SHELL", stringify_env_vars(env_vars))
+        format!("{}\n\ncd $HOME\n{} exec $SHELL", SHELL.to_string(), stringify_env_vars(env_vars))
     } else {
-        format!("#!/usr/bin/env zsh -il\n\ncd $HOME\n{} {}\nexec $SHELL", stringify_env_vars(env_vars), command)
+        format!("{}\n\ncd $HOME\n{} {}\nexec $SHELL", SHELL.to_string(), stringify_env_vars(env_vars), command)
     };
 
     f.write_all(content.as_bytes()).and_then(|_| f.flush()).map_err(Error::IOError)?;

@@ -10,5 +10,8 @@ name = "launch_terminal"
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 
-[target.'cfg(windows)'.dependencies]
+[target.'cfg(target_os = "windows")'.dependencies]
 shlex = "1"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+once_cell = "1.21.3"
