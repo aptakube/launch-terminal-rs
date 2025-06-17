@@ -111,13 +111,13 @@ static SHELL: Lazy<String> = Lazy::new(|| {
 fn env_shell() -> String {
     match env::var("SHELL") {
         Ok(shell) => to_hashbang(shell),
-        Err(_) => to_hashbang(DEFAULT_SHELL.to_string()),
+        Err(_) => to_hashbang("zsh".to_string()), // Default to zsh if SHELL is not set
     }
 }
 
 fn to_hashbang(shell: String) -> String {
     if shell.ends_with("zsh") {
-        DEFAULT_SHELL.to_string()
+        format!("#!/usr/bin/env zsh -il")
     } else if Path::new(&shell).is_absolute() {
         format!("#!{}", shell)
     } else {
