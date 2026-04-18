@@ -39,9 +39,9 @@ pub(crate) fn is_installed(terminal: Terminal) -> Result<bool, Error> {
 fn command_name(terminal: Terminal) -> Result<(&'static str, Launcher), Error> {
     let map = match terminal {
         Terminal::GNOMETerminal => ("gnome-terminal", spawn_gnome_terminal as Launcher),
-        Terminal::Konsole => ("konsole", spawn_konsole as Launcher),
+        Terminal::Konsole => ("konsole", spawn_with_e_flag as Launcher),
+        Terminal::Ghostty => ("ghostty", spawn_with_e_flag as Launcher),
         Terminal::Kitty => ("kitty", spawn_kitty as Launcher),
-        Terminal::Ghostty => ("ghostty", spawn_ghostty as Launcher),
         Terminal::Warp => ("warp-terminal", spawn_warp as Launcher),
         _ => Err(Error::NotSupported)?,
     };
@@ -65,11 +65,7 @@ fn spawn_warp(command: &mut Command, path: &str) -> io::Result<Child> {
     command.args(["warp://launch/aptakube.yaml"]).spawn()
 }
 
-fn spawn_ghostty(commnad: &mut Command, path: &str) -> io::Result<Child> {
-    commnad.args(["-e", path]).spawn()
-}
-
-fn spawn_konsole(command: &mut Command, path: &str) -> io::Result<Child> {
+fn spawn_with_e_flag(command: &mut Command, path: &str) -> io::Result<Child> {
     command.args(["-e", path]).spawn()
 }
 
