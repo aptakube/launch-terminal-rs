@@ -39,17 +39,21 @@ pub(crate) fn is_installed(terminal: Terminal) -> Result<bool, Error> {
         _ => return Err(Error::NotSupported),
     };
 
-    Command::new("osascript")
-        .args(["-e", format!("id of application \"{}\"", app_name)])
+    let script = format!("id of application \"{}\"", app_name);
+    let status = Command::new("osascript")
+        .arg("-e")
+        .arg(script)
         .stderr(Stdio::null())
         .stdin(Stdio::null())
         .stdout(Stdio::null())
-        .status()
+        .status()?;
+
+   Ok(status.success())
 }
 
 fn open_with_app(app: &str, command: &str, env_vars: HashMap<String, String>) -> Result<(), Error> {
     let path = write_temp_script(command, env_vars)?;
-    Command::new("open").args(["-a", app, path]).spawn()?;
+    Command::new("open").arg("-a").arg(app).arg(path).spawn()?;
     Ok(())
 }
 
