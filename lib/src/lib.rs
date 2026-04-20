@@ -23,7 +23,8 @@ pub enum Terminal {
     Konsole,
     Kitty,
     Ghostty,
-    Tabby
+    Tabby,
+    Alacritty,
 }
 
 #[derive(Debug)]

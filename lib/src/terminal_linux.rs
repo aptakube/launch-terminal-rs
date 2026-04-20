@@ -41,6 +41,7 @@ fn command_name(terminal: Terminal) -> Result<(&'static str, Launcher), Error> {
         Terminal::GNOMETerminal => ("gnome-terminal", spawn_gnome_terminal as Launcher),
         Terminal::Konsole => ("konsole", spawn_with_e_flag as Launcher),
         Terminal::Ghostty => ("ghostty", spawn_with_e_flag as Launcher),
+        Terminal::Alacritty => ("alacritty", spawn_with_e_flag as Launcher),
         Terminal::Kitty => ("kitty", spawn_kitty as Launcher),
         Terminal::Warp => ("warp-terminal", spawn_warp as Launcher),
         _ => Err(Error::NotSupported)?,
@@ -75,6 +76,13 @@ fn spawn_kitty(command: &mut Command, path: &str) -> io::Result<Child> {
 
 fn spawn_gnome_terminal(command: &mut Command, path: &str) -> io::Result<Child> {
     command.args(["--", path]).spawn()
+}
+
+fn open_alacritty(command: &mut Command, path: &str) -> Result<(), Error> {
+    match command.args(["-e", path]).spawn() {
+        Ok(_) => Ok(()),
+        Err(err) => Err(Error::IOError(err)),
+    }
 }
 
 fn binary_exists(name: &str) -> bool {
