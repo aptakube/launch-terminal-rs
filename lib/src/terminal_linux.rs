@@ -41,6 +41,7 @@ fn command_name(terminal: Terminal) -> Result<(&'static str, Launcher), Error> {
         Terminal::Kitty => ("kitty", open_kitty as Launcher),
         Terminal::Ghostty => ("ghostty", open_ghostty as Launcher),
         Terminal::Warp => ("warp-terminal", open_warp as Launcher),
+        Terminal::Alacritty => ("alacritty", open_alacritty as Launcher),
         _ => Err(Error::NotSupported)?,
     };
     Ok(map)
@@ -91,6 +92,13 @@ fn open_konsole(command: &mut Command, path: &str) -> Result<(), Error> {
 
 fn open_gnome_terminal(command: &mut Command, path: &str) -> Result<(), Error> {
     match command.args(["--", path]).spawn() {
+        Ok(_) => Ok(()),
+        Err(err) => Err(Error::IOError(err)),
+    }
+}
+
+fn open_alacritty(command: &mut Command, path: &str) -> Result<(), Error> {
+    match command.args(["-e", path]).spawn() {
         Ok(_) => Ok(()),
         Err(err) => Err(Error::IOError(err)),
     }
