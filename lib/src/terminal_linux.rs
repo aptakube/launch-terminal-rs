@@ -78,13 +78,6 @@ fn spawn_gnome_terminal(command: &mut Command, path: &str) -> io::Result<Child> 
     command.args(["--", path]).spawn()
 }
 
-fn open_alacritty(command: &mut Command, path: &str) -> Result<(), Error> {
-    match command.args(["-e", path]).spawn() {
-        Ok(_) => Ok(()),
-        Err(err) => Err(Error::IOError(err)),
-    }
-}
-
 fn binary_exists(name: &str) -> bool {
     match Command::new("which")
         .stderr(Stdio::null())
