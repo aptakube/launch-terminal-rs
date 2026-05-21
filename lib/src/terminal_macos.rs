@@ -111,7 +111,9 @@ fn env_shell() -> String {
 }
 
 fn to_hashbang(shell: String) -> String {
-    if shell.ends_with("zsh") {
+    if shell.ends_with("/nu") || shell.ends_with("nushell") || shell == "nu" {
+        format!("#!/usr/bin/env zsh -il")
+    } else if shell.ends_with("zsh") {
         format!("#!/usr/bin/env zsh -il")
     } else if Path::new(&shell).is_absolute() {
         format!("#!{}", shell)
