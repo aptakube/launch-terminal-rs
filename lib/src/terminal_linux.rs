@@ -10,8 +10,8 @@ use std::{
     io,
     io::Write,
     os::unix::fs::PermissionsExt,
-    path::PathBuf,
-    process::{Command, Stdio},
+    path::{Path, PathBuf},
+    process::Command,
 };
 
 type Launcher = fn(&mut Command, &str) -> io::Result<Child>;
@@ -79,16 +79,27 @@ fn spawn_gnome_terminal(command: &mut Command, path: &str) -> io::Result<Child> 
 }
 
 fn binary_exists(name: &str) -> bool {
-    match Command::new("which")
-        .stderr(Stdio::null())
-        .stdin(Stdio::null())
-        .stdout(Stdio::null())
-        .arg(name)
-        .status()
-    {
-        Ok(status) => status.success(),
-        Err(_) => false,
+    fn is_executable(path: &Path) -> bool {
+        match fs::metadata(path) {
+            Ok(metadata) => metadata.is_file() && (metadata.permissions().mode() & 0o111 != 0),
+            Err(_) => false,
+        }
     }
+
+    if name.is_empty() {
+        return false;
+    }
+
+    let path = Path::new(name);
+    if path.is_absolute() || name.contains('/') {
+        return is_executable(path);
+    }
+
+    let Some(path_var) = std::env::var_os("PATH") else {
+        return false;
+    };
+
+    std::env::split_paths(&path_var).any(|dir| is_executable(&dir.join(name)))
 }
 
 fn write_warp_launch_config(cwd: &str, script_path: &str) -> io::Result<()> {
