@@ -27,9 +27,12 @@ This is currently used by [Aptakube](https://aptakube.com).
 ## Linux
 
 - GNOME Terminal
+- Ptyxis
 - Konsole
-- Kitty
 - Ghostty
+- Alacritty
+- Kitty
+- Warp
 
 
 # Do you want to add support for another terminal?

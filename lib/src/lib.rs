@@ -20,6 +20,7 @@ pub enum Terminal {
     WSL,
     WezTerm,
     GNOMETerminal,
+    Ptyxis,
     Konsole,
     Kitty,
     Ghostty,
