@@ -58,6 +58,11 @@ fn new_command(term: Terminal, env: HashMap<String, String>) -> Result<(Command,
         // AppImage sets some variables that we don't want that to leak into the new terminal
         // If we don't remove them, some terminals like gnome-terminal and kitty won't launch on AppImage
         cmd.env_remove("PYTHONHOME").env_remove("PYTHONPATH");
+
+        if term == Terminal::Konsole {
+            // see https://github.com/aptakube/aptakube/issues/554
+            cmd.env_remove("LD_LIBRARY_PATH").env_remove("LD_PRELOAD"); 
+        }       
     }
     Ok((cmd, launcher))
 }
