@@ -55,9 +55,9 @@ fn new_command(term: Terminal, env: HashMap<String, String>) -> Result<(Command,
     let mut cmd = Command::new(bin);
     cmd.envs(env).current_dir(cwd());
     if std::env::var("APPIMAGE").is_ok() {
-        // AppImage sets its own PYTHONHOME and PYTHONPATH variables and we don't want that to leak into the new terminal
+        // AppImage sets some variables that we don't want that to leak into the new terminal
         // If we don't remove them, some terminals like gnome-terminal and kitty won't launch on AppImage
-        cmd.env_remove("PYTHONHOME").env_remove("PYTHONPATH");
+        cmd.env_remove("PYTHONHOME").env_remove("PYTHONPATH").env_remove("LD_LIBRARY_PATH").env_remove("LD_PRELOAD");
     }
     Ok((cmd, launcher))
 }
