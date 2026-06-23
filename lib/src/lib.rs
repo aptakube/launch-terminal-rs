@@ -11,7 +11,7 @@ mod terminal_windows;
 #[cfg(target_os = "linux")]
 mod terminal_linux;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum Terminal {
     AppleTerminal,
     ITerm2,
