@@ -32,11 +32,11 @@ pub(crate) fn open(
 }
 
 pub(crate) fn is_installed(terminal: Terminal) -> Result<bool, Error> {
-    let (bin, _) = command_name(terminal)?;
+    let (bin, _) = command_name(&terminal)?;
     Ok(binary_exists(bin))
 }
 
-fn command_name(terminal: Terminal) -> Result<(&'static str, Launcher), Error> {
+fn command_name(terminal: &Terminal) -> Result<(&'static str, Launcher), Error> {
     let map = match terminal {
         Terminal::GNOMETerminal => ("gnome-terminal", spawn_gnome_terminal as Launcher),
         Terminal::Ptyxis => ("ptyxis", spawn_gnome_terminal as Launcher),
@@ -51,7 +51,7 @@ fn command_name(terminal: Terminal) -> Result<(&'static str, Launcher), Error> {
 }
 
 fn new_command(term: Terminal, env: HashMap<String, String>) -> Result<(Command, Launcher), Error> {
-    let (bin, launcher) = command_name(term)?;
+    let (bin, launcher) = command_name(&term)?;
     let mut cmd = Command::new(bin);
     cmd.envs(env).current_dir(cwd());
     if std::env::var("APPIMAGE").is_ok() {
