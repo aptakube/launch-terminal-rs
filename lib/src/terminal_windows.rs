@@ -63,7 +63,7 @@ fn write_temp_script(command: &str, env_vars: HashMap<String, String>) -> Result
     let content = if command.is_empty() {
         format!("#!/usr/bin/env sh\n\n{} exec $SHELL", set_env)
     } else {
-        format!("#!/usr/bin/env sh\n\n{} {}\n{} exec $SHELL", set_env, command, set_env)
+        format!("#!/usr/bin/env sh\n\n{} {}", set_env, command)
     };
     f.write_all(content.as_bytes()).and_then(|_| f.flush())?;
     Ok(path)

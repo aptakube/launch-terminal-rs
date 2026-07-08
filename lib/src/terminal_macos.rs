@@ -139,7 +139,7 @@ fn write_temp_script(command: &str, env_vars: HashMap<String, String>) -> Result
     let content = if command.is_empty() {
         format!("{}\n\ncd $HOME\n{} exec $SHELL", SHELL.to_string(), stringify_env_vars(env_vars))
     } else {
-        format!("{}\n\ncd $HOME\n{} {}\nexec $SHELL", SHELL.to_string(), stringify_env_vars(env_vars), command)
+        format!("{}\n\ncd $HOME\n{} {}", SHELL.to_string(), stringify_env_vars(env_vars), command)
     };
 
     f.write_all(content.as_bytes()).and_then(|_| f.flush())?;
